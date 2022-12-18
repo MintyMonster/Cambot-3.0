@@ -35,24 +35,14 @@ namespace Cambot_3
             _commands.ComponentCommandExecuted += ComponentCommandExecuted;
         }
 
-        private Task ComponentCommandExecuted(ComponentCommandInfo info, IInteractionContext context, IResult result)
-        {
-            return Task.CompletedTask;
-        }
+        private Task ComponentCommandExecuted(ComponentCommandInfo info, IInteractionContext context, IResult result) => Task.CompletedTask;
 
-        private Task ContextCommandExecuted(ContextCommandInfo info, IInteractionContext context, IResult result)
-        {
-            return Task.CompletedTask;
-        }
+        private Task ContextCommandExecuted(ContextCommandInfo info, IInteractionContext context, IResult result) => Task.CompletedTask;
 
-        private Task SlashCommandExecuted(SlashCommandInfo info, IInteractionContext context, IResult result)
-        {
-            return Task.CompletedTask;
-        }
+        private Task SlashCommandExecuted(SlashCommandInfo info, IInteractionContext context, IResult result) =>Task.CompletedTask;
 
         private async Task HandleInteraction(SocketInteraction arg)
         {
-            Console.WriteLine("Interaction found");
             try
             {
                 var context = new SocketInteractionContext(_client, arg);
@@ -60,7 +50,9 @@ namespace Cambot_3
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex);
+                Logger.Fatal(ex);
+
+                await arg.RespondAsync("Something went wrong... Please try again!");
 
                 if (arg.Type == InteractionType.ApplicationCommand)
                     await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());

@@ -261,11 +261,24 @@
   <ItemGroup>
     <Compile Include="API\ApiFunctions.cs" />
     <Compile Include="API\ApiHelper.cs" />
+    <Compile Include="API\ApiModels\ApodModel.cs" />
+    <Compile Include="API\ApiModels\CatFactModel.cs" />
+    <Compile Include="API\ApiModels\CatsModel.cs" />
+    <Compile Include="API\ApiModels\CryptoModel.cs" />
     <Compile Include="API\ApiModels\DadJokeModel.cs" />
+    <Compile Include="API\ApiModels\DogModel.cs" />
+    <Compile Include="API\ApiModels\FoxModel.cs" />
     <Compile Include="API\ApiModels\InternationalSpaceStation\ISSPosition.cs" />
     <Compile Include="API\ApiModels\InternationalSpaceStation\IssTimeStamp.cs" />
     <Compile Include="API\ApiModels\InternationalSpaceStation\LongLatISS.cs" />
+    <Compile Include="API\ApiModels\MarsRoverModel.cs" />
     <Compile Include="API\ApiModels\PeopleInSpaceModel.cs" />
+    <Compile Include="API\ApiModels\RaccoonModel.cs" />
+    <Compile Include="API\ApiModels\RedPandaModel.cs" />
+    <Compile Include="API\ApiModels\Trefle\TrefleModel.cs" />
+    <Compile Include="API\ApiModels\Trefle\TreflePageModel.cs" />
+    <Compile Include="ConfigurationHandler.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Modules\SlashCommands.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -273,6 +286,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="ConfigurationFile.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
