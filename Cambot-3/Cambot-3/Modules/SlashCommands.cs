@@ -31,16 +31,18 @@ namespace Cambot_3.Modules
             _services = services;
         }
 
+        // For weather for the Americans
+        private string ConvertToFahrenheit(float temp) => ((temp * 1.8) + 32).ToString("N1");
 
         // Convert all Unix timestamps from API
-        public DateTime ConvertUnix(long unix)
+        private DateTime ConvertUnix(long unix)
         {
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return epoch.AddSeconds(unix);
         }
 
         // Get random hugging GIF
-        public string GetHugGif()
+        private string GetHugGif()
         {
             List<string> gifs = new List<string>()
             {
@@ -58,7 +60,7 @@ namespace Cambot_3.Modules
             return gifs[new Random().Next(0, gifs.Count)];
         }
 
-        public string GetRandomOshawott()
+        private string GetRandomOshawott()
         {
             List<string> gifs = new List<string>()
             {
@@ -75,7 +77,7 @@ namespace Cambot_3.Modules
         }
 
         // Custom embeds styled for CamBot
-        public Embed CreateCustomEmbed(string title = null, string content = null, string image = null, string credit = null, SocketUser user = null, bool timestamp = true)
+        private Embed CreateCustomEmbed(string title = null, string content = null, string image = null, string credit = null, SocketUser user = null, bool timestamp = true)
         {
             var footerBuilder = new EmbedFooterBuilder();
             footerBuilder.Text = credit ?? string.Empty;
@@ -98,10 +100,159 @@ namespace Cambot_3.Modules
             return embed.Build();
         }
 
+        private Embed CreateCustomEmbed(string title, string content, SocketUser user)
+        {
+            var authorBuilder = new EmbedAuthorBuilder();
+            authorBuilder.IconUrl = user.GetAvatarUrl(ImageFormat.Png, 128) ?? Context.Guild.IconUrl;
+            authorBuilder.Name = user.Username ?? string.Empty;
+            authorBuilder.Build();
+
+            var embed = new EmbedBuilder();
+            embed.Title = title;
+            embed.Description = content;
+            embed.Color = new Color(127, 109, 188);
+            embed.Author = authorBuilder;
+
+            return embed.Build();
+        }
+
+        private List<string> commandNames = new List<string>()
+            {
+                ":newspaper: help", ":first_quarter_moon_with_face: apod", ":rofl: dadjoke", ":first_quarter_moon_with_face: iss", ":ringed_planet: mars",
+            ":calendar: yearfact", ":1234: mathfact", ":cloud_rain: weather", ":cat: cat", ":dog: dog", ":fox: fox", ":panda_face: redpanda", ":raccoon: raccoon",
+                ":dollar: topcrypto", ":dollar: crypto", ":cat: catfact", ":potted_plant: plant", ":hugging: hug", ":bar_chart: stats", ":astronaut: spacepeople"
+                // Add rest of added commands
+            };
+
+        // Help command responses
+        
+        private async Task GetDadJokeHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "In need of a random dad joke? :rofl:", content: "Usage: **/dadjoke**", user: Context.User));
+        private async Task GetApodHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Get the astronomy picture of the day! :first_quarter_moon_with_face:", content: "Usage: **/apod**", user: Context.User));
+        private async Task GetISSHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Where's the International Space station? :first_quarter_moon_with_face:", content: "Usage: **/iss**", user: Context.User));
+        private async Task GetMarsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Wow! Pictures from Mars! :ringed_planet:", content: "Usage: **/mars**", user: Context.User));
+        private async Task GetYearFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Where did 202 even go?! :calendar:", content: "Usage: **/yearfact [*Optional: year*]**", user: Context.User));
+        private async Task GetMathFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Some say numbers are boring... :1234:", content: "Usage: **/mathfact [*Optional: number*]**", user: Context.User));
+        private async Task GetWeatherHelp() => await RespondAsync(embed: CreateCustomEmbed(title: $"It's {(new Random().Next(0, 11) < 5 ? "hot :hot_face: out!" : "cold :cold_face: out!").ToString()}", content: "Usage: **/weather [*Required: City*]**", user: Context.User));
+        private async Task GetCatHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Feline friends! :cat:", content: "Usage: **/cat**", user: Context.User));
+        private async Task GetDogHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Woofers! :dog:", content: "Usage: **/dog**", user: Context.User));
+        private async Task GetFoxHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Pandora's fox. Haha, get it? :fox:", content: "Usage: **/fox**", user: Context.User));
+        private async Task GetRaccoonHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Trash pandas! :raccoon:", content: "Usage: **/raccoon**", user: Context.User));
+        private async Task GetRedPandaHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "These are bear-y cute! :panda_face:", content: "Usage: **/redpanda**", user: Context.User));
+        private async Task GetTopCryptoHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "The top 25 Cryptocurrencies right now! :dollar:", content: "Usage: **/topcrypto**", user: Context.User));
+        private async Task GetCryptoHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Want to know about a specific coin? :dollar:", content: "Usage: **/crypto [*Optional: name, Default: Bitcoin*]**", user: Context.User));
+        private async Task GetCatFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Feline friend facts! :cat:", content: "Usage: **/catfact**", user: Context.User));
+        private async Task GetPlantsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Plants! :potted_plant:", content: "Usage: **/plants [*Optional: plantName*]**", user: Context.User));
+        private async Task GetHugHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Awwww, hugs! :hugging:", content: "Usage: **/hug [*Required: mention*]**", user: Context.User));
+        private async Task GetStatsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "How's Cambot doing? :bar_chart:", content: "Usage: **/stats**", user: Context.User));
+        private async Task GetSpacePeopleHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Who's in space right now? :astronaut:", content: "Usage: **/spacepeople**", user: Context.User));
+        private async Task GetHelpHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "You've already found me silly! :newspaper:", content: "Usage: **/help [*Optional: Command Name*]**", user: Context.User));
+        // Add info, leaderboard, help, points, contact, addtoserver, updates, and others?
+
 
         //////////////////////////////////////////////////
-        //COMMANDS START
+        // COMMANDS START
         //////////////////////////////////////////////////
+
+        // Help command
+        [SlashCommand("help", "Need some help?")]
+        public async Task GetHelp([Remainder] string command = null)
+        {
+            if (string.IsNullOrEmpty(command))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Cambot has some awesome commands!\nHere are some to name!\n");
+                commandNames.ForEach(x => sb.AppendLine($"\t- **{x}**"));
+                sb.AppendLine($"\nWant to know about a specific command?\nExample: **/help weather**");
+
+                await RespondAsync(embed: CreateCustomEmbed(title: "All the commands!", content: sb.ToString(), credit: "Cambot", user: Context.User, timestamp: true));
+            }
+            else
+            {
+                switch (command)
+                {
+                    case "help":
+                        GetHelpHelp();
+                        break;
+
+                    case "apod":
+                        GetApodHelp();
+                        break;
+
+                    case "dadjoke":
+                        GetDadJokeHelp();
+                        break;
+
+                    case "iss":
+                        GetISSHelp();
+                        break;
+
+                    case "mars":
+                        GetMarsHelp();
+                        break;
+
+                    case "yearfact":
+                        GetYearFactHelp();
+                        break;
+
+                    case "mathfact":
+                        GetMathFactHelp();
+                        break;
+
+                    case "weather":
+                        GetWeatherHelp();
+                        break;
+
+                    case "cat":
+                        GetCatHelp();
+                        break;
+
+                    case "dog":
+                        GetDogHelp();
+                        break;
+
+                    case "fox":
+                        GetFoxHelp();
+                        break;
+
+                    case "raccoon":
+                        GetRaccoonHelp();
+                        break;
+
+                    case "redpanda":
+                        GetRedPandaHelp();
+                        break;
+
+                    case "topcrypto":
+                        GetTopCryptoHelp();
+                        break;
+
+                    case "crypto":
+                        GetCryptoHelp();
+                        break;
+
+                    case "catfact":
+                        GetCatFactHelp();
+                        break;
+
+                    case "plants":
+                        GetPlantsHelp();
+                        break;
+
+                    case "hug":
+                        GetHugHelp();
+                        break;
+
+                    case "stats":
+                        GetStatsHelp();
+                        break;
+
+                    case "spacepeople":
+                        GetSpacePeopleHelp();
+                        break;
+                }
+            }
+
+        }
 
         // Test command
         [SlashCommand("test", "this is a test command")]
@@ -298,20 +449,20 @@ namespace Cambot_3.Modules
                 credit: "coinlore.net", user: Context.User, timestamp: true));
         }
 
-        [SlashCommand("plant", "Need information about a plant? Look no further!", runMode: Discord.Interactions.RunMode.Async)]
-        public async Task GetPlants([Remainder] string query = null)
+        [SlashCommand("plants", "Need information about a plant? Look no further!", runMode: Discord.Interactions.RunMode.Async)]
+        public async Task GetPlants([Remainder] string plant = null) // This is so ugly please make it nicer to look at Cameron
         {
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrEmpty(plant))
             {
                 try
                 {
                     TreflePageRoot _response = await ApiFunctions.GetTreflePage(ConfigurationHandler.GetConfigKey("Trefle"));
-                    var plant = _response.data[new Random().Next(_response.data.Count)];
+                    var plant2 = _response.data[new Random().Next(_response.data.Count)];
 
-                    await RespondAsync(embed: CreateCustomEmbed(title: "(Random) " + (string.IsNullOrEmpty(plant.common_name) ? plant.scientific_name : plant.common_name).ToString(),
-                        content: $"**Common Name:** " + (string.IsNullOrEmpty(plant.common_name) ? "N/A" : plant.common_name).ToString() + $"\n**Scientific Name:** {plant.scientific_name}\n" +
-                        $"**Family Name:** " + (string.IsNullOrEmpty(plant.family_common_name) ? " N/A" : plant.family_common_name).ToString() +
-                        $"\n**Taxanomic Rank:** {plant.rank}\n**Genus:** {plant.genus}\n**Family:** {plant.family}\n\nWant to research a plant? Use **/plant [name]**", image: plant.image_url, credit: "trefle.io",
+                    await RespondAsync(embed: CreateCustomEmbed(title: "(Random) " + (string.IsNullOrEmpty(plant2.common_name) ? plant2.scientific_name : plant2.common_name).ToString(),
+                        content: $"**Common Name:** " + (string.IsNullOrEmpty(plant2.common_name) ? "N/A" : plant2.common_name).ToString() + $"\n**Scientific Name:** {plant2.scientific_name}\n" +
+                        $"**Family Name:** " + (string.IsNullOrEmpty(plant2.family_common_name) ? " N/A" : plant2.family_common_name).ToString() +
+                        $"\n**Taxanomic Rank:** {plant2.rank}\n**Genus:** {plant2.genus}\n**Family:** {plant2.family}\n\nWant to research a plant? Use **/plant [name]**", image: plant2.image_url, credit: "trefle.io",
                         user: Context.User, timestamp: true));
 
                 } catch (Exception ex)
@@ -321,9 +472,9 @@ namespace Cambot_3.Modules
                 
             } else
             {
-                try
+                try // Try at the top to catch any issues in the middle because the [].common_name is really inconsistent
                 {
-                    TrefleRoot _response = await ApiFunctions.GetTrefle(ConfigurationHandler.GetConfigKey("Trefle"), query);
+                    TrefleRoot _response = await ApiFunctions.GetTrefle(ConfigurationHandler.GetConfigKey("Trefle"), plant);
                     StringBuilder sb = new StringBuilder();
                     bool single = false;
                     int index = 0;
@@ -331,47 +482,81 @@ namespace Cambot_3.Modules
 
                     _response.data.ForEach(x =>
                     {
-                        iter++;
-                        string name = (string.IsNullOrEmpty(x.common_name) ? x.scientific_name : x.common_name).Replace(" ", "").ToString(); // Common name consistently throws null???
-                        if (string.Equals(name.ToLower(), query.ToLower()) || string.Equals(x.genus.ToLower(), query.ToLower()))
+                        string name = string.IsNullOrEmpty(x.common_name) ? x.scientific_name : x.common_name;
+                        if(plant.ToLower().Equals(name.ToLower()) || plant.ToLower().Equals(x.genus.ToLower()))
                         {
                             single = true;
                             index = iter;
                         }
+                        iter++;
                     });
 
-                    if (!single || _response.data.Count > 1)
-                    {
-                        _response.data.ForEach(x =>
-                        {
-                            sb.Append($"- " + (string.IsNullOrEmpty(x.common_name) ? x.scientific_name : x.common_name).ToString() + "\n");
-                        });
-                    }
+                    if (!single || _response.data.Count > 1) 
+                        _response.data.ForEach(x => sb.AppendLine($"- " + (string.IsNullOrEmpty(x.common_name) ? x.scientific_name : x.common_name).ToString()));
 
-                    if (!single)
+                    if (single)
                     {
-                        await RespondAsync(embed: CreateCustomEmbed(title: "Results: ", sb.ToString() + $"\n\nPlease refine your search. Example: **/plant {(string.IsNullOrEmpty(_response.data[0].common_name) ? _response.data[0].scientific_name : _response.data[0].common_name).ToString()}**",
-                            credit: "trefle.io", user: Context.User));
-                    }
-                    else
-                    {
-                        /*
+                        string name = string.IsNullOrEmpty(_response.data[index].common_name) ? _response.data[index].scientific_name : _response.data[index].common_name;
+
                         await RespondAsync(embed: CreateCustomEmbed(title: (string.IsNullOrEmpty(_response.data[index].common_name) ? _response.data[index].scientific_name : _response.data[index].common_name).ToString(),
                             content: $"**Common Name:** " + (string.IsNullOrEmpty(_response.data[index].common_name) ? "N/A" : _response.data[index].common_name).ToString() + $"\n**Scientific Name:** {_response.data[index].scientific_name}\n" +
                             $"**Family Name:** " + (string.IsNullOrEmpty(_response.data[index].family_common_name) ? " N/A" : _response.data[index].family_common_name).ToString() +
                             $"\n**Taxanomic Rank:** {_response.data[index].rank}\n**Genus:** {_response.data[index].genus}\n**Family:** {_response.data[index].family}", image: _response.data[index].image_url, credit: "trefle.io",
                             user: Context.User, timestamp: true));
-                        */
-                        Logger.Info(string.IsNullOrEmpty(_response.data[index].common_name) ? _response.data[index].scientific_name : _response.data[index].common_name);
-                        Logger.Info(query);
                     }
-                }
-                catch(Exception ex)
-                {
-                    Logger.Error(ex);
-                }
-                
+                    else
+                    {
+                        await RespondAsync(embed: CreateCustomEmbed(title: "Results: ", sb.ToString() + $"\n\nPlease refine your search. Example: **/plant {(string.IsNullOrEmpty(_response.data[0].common_name) ? _response.data[0].scientific_name : _response.data[0].common_name).ToString()}**",
+                            credit: "trefle.io", user: Context.User));
+                    }
                     
+                }catch(Exception ex)
+                {
+                    Logger.Error("Fatal: " + ex.Message);
+                }    
+            }
+        }
+
+        [SlashCommand("yearfact", "Anybody want a random fact about a year?")]
+        public async Task GetYearFact([Remainder] string year = null)
+        {
+            NumbersModel _response = await ApiFunctions.GetYearFact(year);
+
+            if (_response.Found == true)
+                await RespondAsync($"**Year:** {_response.Number}\n**Fact:** {_response.Text}");
+            else
+                await RespondAsync($"There are no facts for that year :confused: Please try again!");
+        }
+
+        [SlashCommand("mathfact", "Anybody want a random math fact?")]
+        public async Task GetMathFact([Remainder] string number = null)
+        {
+            NumbersModel _response = await ApiFunctions.GetMathFact(number);
+
+            if (_response.Found == true)
+                await RespondAsync($"**Number:** {_response.Number}\n**Fact**: {_response.Text}");
+            else
+                await RespondAsync($"We couldn't find any facts about that number! :confused: Please try again!");
+        }
+
+        [SlashCommand("weather", "Want the weather in your location?")]
+        public async Task GetCurrentWeather([Remainder] string city = null)
+        {
+            if (city == null) await RespondAsync("Please provide me with a city otherwise I can't find the weather! :confused:");
+
+            OWMRoot _response = await ApiFunctions.GetCurrentWeather(city, ConfigurationHandler.GetConfigKey("OWM"));
+
+            try
+            {
+                
+                await RespondAsync(embed: CreateCustomEmbed(title: _response.name, content: $"**Coord:**\n\t**- Longitude:** {_response.coord.lon}\n\t**- Latitude:** {_response.coord.lat}" +
+                $"\n\n**Wind:**\n\t**- Speed:** {_response.wind.speed} m/s\n\t**- Direction:** {_response.wind.deg}°\n\n**Conditions:**\n\t**- Temp:** {_response.main.temp}°C ({ConvertToFahrenheit((float)_response.main.temp)}°F)" +
+                $"\n\t**- Feels-like:** {_response.main.feels_like}°C ({ConvertToFahrenheit((float)_response.main.feels_like)}°F)\n\t**- Minimum Temp:** {_response.main.temp_min}°C ({ConvertToFahrenheit((float)_response.main.temp_min)}°F)" +
+                $"\n\t**- Maximum Temp:** {_response.main.temp_max}°C ({ConvertToFahrenheit((float)_response.main.temp_max)}°F)\n\t**- Pressure:** {_response.main.pressure}\n\t**- Humidity:** {_response.main.humidity}%\n\n**Clouds:** {_response.clouds.all}%", image: null, credit: "openweathermap.org", user: Context.User, timestamp: true));
+
+            }catch(Exception ex)
+            {
+                Logger.Error(ex);
             }
         }
     }

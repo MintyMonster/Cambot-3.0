@@ -130,5 +130,30 @@ namespace Cambot_3.API
             using (HttpResponseMessage _response = await ApiHelper.ApiClient.GetAsync($"https://trefle.io/api/v1/plants/search?q={query}&token={key}"))
                 return _response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<TrefleRoot>(await _response.Content.ReadAsStringAsync()) : throw new Exception(_response.ReasonPhrase);
         }
+
+        // Year fact
+        public static async Task<NumbersModel> GetYearFact(string query)
+        {
+            string url = string.IsNullOrEmpty(query) ? "http://numbersapi.com/random/year?json=true" : $"http://numbersapi.com/{query}/year?json=true";
+
+            using (HttpResponseMessage _response = await ApiHelper.ApiClient.GetAsync(url))
+                return _response.IsSuccessStatusCode ? await _response.Content.ReadAsAsync<NumbersModel>() : throw new Exception(_response.ReasonPhrase);
+        }
+
+        // Math fact
+        public static async Task<NumbersModel> GetMathFact(string query)
+        {
+            string url = string.IsNullOrEmpty(query) ? "http://numbersapi/random/math?json=true" : $"http://numbersapi/{query}/math?json=true";
+
+            using (HttpResponseMessage _response = await ApiHelper.ApiClient.GetAsync(url))
+                return _response.IsSuccessStatusCode ? await _response.Content.ReadAsAsync<NumbersModel>() : throw new Exception(_response.ReasonPhrase);
+        }
+
+        // Open weather map | Current weather
+        public static async Task<OWMRoot> GetCurrentWeather(string query, string key)
+        {
+            using (HttpResponseMessage _response = await ApiHelper.ApiClient.GetAsync($"https://api.openweathermap.org/data/2.5/weather?q={query}&units=metric&appid={key}"))
+                return _response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<OWMRoot>(await _response.Content.ReadAsStringAsync()) : throw new Exception(_response.ReasonPhrase);
+        }
     }
 }

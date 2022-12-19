@@ -277,6 +277,8 @@
     <Compile Include="API\ApiModels\RedPandaModel.cs" />
     <Compile Include="API\ApiModels\Trefle\TrefleModel.cs" />
     <Compile Include="API\ApiModels\Trefle\TreflePageModel.cs" />
+    <Compile Include="API\ApiModels\WeatherModel.cs" />
+    <Compile Include="API\ApiModels\YearFactModel.cs" />
     <Compile Include="ConfigurationHandler.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Modules\SlashCommands.cs" />

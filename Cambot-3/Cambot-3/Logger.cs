@@ -36,6 +36,9 @@ namespace Cambot_3
             Console.ResetColor();
         }
 
+        public static void Log(string message = null) => Log(LogLevel.Info, message);
+        public static void Log(Exception exception) => Log(LogLevel.Info, exception.ToString());
+
         public static void Debug(string message = null) => Log(LogLevel.Debug, message);
 
         public static void Debug(Exception exception) => Log(LogLevel.Debug, exception.ToString());
