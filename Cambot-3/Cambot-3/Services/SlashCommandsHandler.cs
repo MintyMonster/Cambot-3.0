@@ -52,7 +52,7 @@ namespace Cambot_3
                 var context = new SocketInteractionContext(_client, arg);
 
                 // Levelling code
-                LevelsDatabaseHandler.HandleCommandExperience(_client.GetUser(context.User.Id).Id, _client.GetUser(context.User.Id).Username);
+                LevelsDatabaseHandler.HandleCommandExperience(_client.GetUser(context.User.Id).Id, _client.GetUser(context.User.Id).Username, context);
                 Logger.Error(_client.GetUser(context.User.Id).Id.ToString());
 
                 await _commands.ExecuteCommandAsync(context, _services);

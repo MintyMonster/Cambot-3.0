@@ -4,6 +4,7 @@ using Cambot_3.API.ApiModels.InternationalSpaceStation;
 using Cambot_3.API.ApiModels.Trefle;
 using Cambot_3.utils;
 using Cambot_3.utils.JSON;
+using Cambot_3.utils.Levels;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -548,6 +549,13 @@ namespace Cambot_3.Modules
             {
                 Logger.Error(ex);
             }
+        }
+
+        [SlashCommand("level", "Check your level")]
+        public async Task GetCurrentLevel()
+        {
+            await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s stats!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User)} experience** " +
+                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User)}**\n\n__Progress:__\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
         }
     }
 }

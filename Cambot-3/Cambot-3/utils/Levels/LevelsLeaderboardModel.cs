@@ -10,7 +10,7 @@ namespace Cambot_3.utils.Levels
     public class LevelsLeaderboardModel
     {
         [Key]
-        public int UserID { get; set; }
+        public ulong UserID { get; set; }
         public string Username { get; set; }
         public double Experience { get; set; }
         public int Level { get; set; }
