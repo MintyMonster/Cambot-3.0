@@ -18,6 +18,7 @@ namespace Cambot_3.API
 {
     public class ApiFunctions
     {
+
         // Dad joke command
         public static async Task<DadJokeModel> GetDadJoke()
         {

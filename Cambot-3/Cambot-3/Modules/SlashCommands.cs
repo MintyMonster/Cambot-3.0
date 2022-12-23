@@ -2,18 +2,16 @@
 using Cambot_3.API.ApiModels;
 using Cambot_3.API.ApiModels.InternationalSpaceStation;
 using Cambot_3.API.ApiModels.Trefle;
+using Cambot_3.utils;
+using Cambot_3.utils.JSON;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,25 +22,23 @@ namespace Cambot_3.Modules
         public InteractionService Commands { get; set; }
         private DiscordSocketClient _client;
         private IServiceProvider _services;
+        private Dictionary<CommandUtils.CommandName, CommandUtils.CommandType> _commandDict;
 
         public SlashCommands(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
+            _commandDict = CommandUtils.GetCommands();
         }
 
         // For weather for the Americans
         private string ConvertToFahrenheit(float temp) => ((temp * 1.8) + 32).ToString("N1");
 
         // Convert all Unix timestamps from API
-        private DateTime ConvertUnix(long unix)
-        {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return epoch.AddSeconds(unix);
-        }
+        private DateTime ConvertUnix(long unix) => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(unix);
 
         // Get random hugging GIF
-        private string GetHugGif()
+        private string GetRandomHugGif()
         {
             List<string> gifs = new List<string>()
             {
@@ -100,7 +96,7 @@ namespace Cambot_3.Modules
             return embed.Build();
         }
 
-        private Embed CreateCustomEmbed(string title, string content, SocketUser user)
+        private Embed CreateCustomEmbed(string title, string content, SocketUser user = null)
         {
             var authorBuilder = new EmbedAuthorBuilder();
             authorBuilder.IconUrl = user.GetAvatarUrl(ImageFormat.Png, 128) ?? Context.Guild.IconUrl;
@@ -116,37 +112,25 @@ namespace Cambot_3.Modules
             return embed.Build();
         }
 
-        private List<string> commandNames = new List<string>()
-            {
-                ":newspaper: help", ":first_quarter_moon_with_face: apod", ":rofl: dadjoke", ":first_quarter_moon_with_face: iss", ":ringed_planet: mars",
-            ":calendar: yearfact", ":1234: mathfact", ":cloud_rain: weather", ":cat: cat", ":dog: dog", ":fox: fox", ":panda_face: redpanda", ":raccoon: raccoon",
-                ":dollar: topcrypto", ":dollar: crypto", ":cat: catfact", ":potted_plant: plant", ":hugging: hug", ":bar_chart: stats", ":astronaut: spacepeople"
-                // Add rest of added commands
-            };
+        private Embed CreateCustomEmbed(string title, string content, Color color)
+        {
 
-        // Help command responses
-        
-        private async Task GetDadJokeHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "In need of a random dad joke? :rofl:", content: "Usage: **/dadjoke**", user: Context.User));
-        private async Task GetApodHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Get the astronomy picture of the day! :first_quarter_moon_with_face:", content: "Usage: **/apod**", user: Context.User));
-        private async Task GetISSHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Where's the International Space station? :first_quarter_moon_with_face:", content: "Usage: **/iss**", user: Context.User));
-        private async Task GetMarsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Wow! Pictures from Mars! :ringed_planet:", content: "Usage: **/mars**", user: Context.User));
-        private async Task GetYearFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Where did 202 even go?! :calendar:", content: "Usage: **/yearfact [*Optional: year*]**", user: Context.User));
-        private async Task GetMathFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Some say numbers are boring... :1234:", content: "Usage: **/mathfact [*Optional: number*]**", user: Context.User));
-        private async Task GetWeatherHelp() => await RespondAsync(embed: CreateCustomEmbed(title: $"It's {(new Random().Next(0, 11) < 5 ? "hot :hot_face: out!" : "cold :cold_face: out!").ToString()}", content: "Usage: **/weather [*Required: City*]**", user: Context.User));
-        private async Task GetCatHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Feline friends! :cat:", content: "Usage: **/cat**", user: Context.User));
-        private async Task GetDogHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Woofers! :dog:", content: "Usage: **/dog**", user: Context.User));
-        private async Task GetFoxHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Pandora's fox. Haha, get it? :fox:", content: "Usage: **/fox**", user: Context.User));
-        private async Task GetRaccoonHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Trash pandas! :raccoon:", content: "Usage: **/raccoon**", user: Context.User));
-        private async Task GetRedPandaHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "These are bear-y cute! :panda_face:", content: "Usage: **/redpanda**", user: Context.User));
-        private async Task GetTopCryptoHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "The top 25 Cryptocurrencies right now! :dollar:", content: "Usage: **/topcrypto**", user: Context.User));
-        private async Task GetCryptoHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Want to know about a specific coin? :dollar:", content: "Usage: **/crypto [*Optional: name, Default: Bitcoin*]**", user: Context.User));
-        private async Task GetCatFactHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Feline friend facts! :cat:", content: "Usage: **/catfact**", user: Context.User));
-        private async Task GetPlantsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Plants! :potted_plant:", content: "Usage: **/plants [*Optional: plantName*]**", user: Context.User));
-        private async Task GetHugHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Awwww, hugs! :hugging:", content: "Usage: **/hug [*Required: mention*]**", user: Context.User));
-        private async Task GetStatsHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "How's Cambot doing? :bar_chart:", content: "Usage: **/stats**", user: Context.User));
-        private async Task GetSpacePeopleHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "Who's in space right now? :astronaut:", content: "Usage: **/spacepeople**", user: Context.User));
-        private async Task GetHelpHelp() => await RespondAsync(embed: CreateCustomEmbed(title: "You've already found me silly! :newspaper:", content: "Usage: **/help [*Optional: Command Name*]**", user: Context.User));
-        // Add info, leaderboard, help, points, contact, addtoserver, updates, and others?
+            var embed = new EmbedBuilder();
+            embed.Title = title;
+            embed.Description = content;
+            embed.Color = color;
+
+            return embed.Build();
+        }
+
+        private Embed CreateCustomEmbed(string title, string content)
+        {
+            var embed = new EmbedBuilder();
+            embed.Title = title;
+            embed.Description = content;
+
+            return embed.Build();
+        }
 
 
         //////////////////////////////////////////////////
@@ -159,100 +143,114 @@ namespace Cambot_3.Modules
         {
             if (string.IsNullOrEmpty(command))
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Cambot has some awesome commands!\nHere are some to name!\n");
-                commandNames.ForEach(x => sb.AppendLine($"\t- **{x}**"));
-                sb.AppendLine($"\nWant to know about a specific command?\nExample: **/help weather**");
+                StringBuilder sbNo = new StringBuilder();
+                StringBuilder sbReq = new StringBuilder();
+                StringBuilder sbOpt = new StringBuilder();
 
-                await RespondAsync(embed: CreateCustomEmbed(title: "All the commands!", content: sb.ToString(), credit: "Cambot", user: Context.User, timestamp: true));
-            }
+                _commandDict.ToList().ForEach(x =>
+                {
+                    if (x.Value.parameter == CommandUtils.CommandParams.None) sbNo.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
+                    else if (x.Value.parameter == CommandUtils.CommandParams.Optional) sbOpt.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
+                    else sbReq.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
+
+                });
+
+                await RespondAsync(embed: CreateCustomEmbed(title: "All the commands!", content: $"Cambot has some pretty awesome commands!\nHere's a list of them:\n\n___Commands with no parameters:___\n{sbNo}" +
+                    $"\n___Commands with optional parameters:___\n{sbOpt}\n___Commands with required parameters:___\n{sbReq}\n\nWant to know about a specific command?\nExample: **/help weather**",user: Context.User));
+            } 
             else
             {
-                switch (command)
+                string title = string.Empty;
+                string content = string.Empty;
+
+                _commandDict.ToList().ForEach(x =>
                 {
-                    case "help":
-                        GetHelpHelp();
-                        break;
+                    if (x.Value.name == command)
+                    {
+                        title = x.Value.title;
+                        content = x.Value.usage;
+                    }
+                    else
+                    {
+                        title = ":x: Command not found...";
+                        content = $"**{command}** wasn't found. Are you sure you spelt it correctly?";
+                    }
+                });
 
-                    case "apod":
-                        GetApodHelp();
-                        break;
-
-                    case "dadjoke":
-                        GetDadJokeHelp();
-                        break;
-
-                    case "iss":
-                        GetISSHelp();
-                        break;
-
-                    case "mars":
-                        GetMarsHelp();
-                        break;
-
-                    case "yearfact":
-                        GetYearFactHelp();
-                        break;
-
-                    case "mathfact":
-                        GetMathFactHelp();
-                        break;
-
-                    case "weather":
-                        GetWeatherHelp();
-                        break;
-
-                    case "cat":
-                        GetCatHelp();
-                        break;
-
-                    case "dog":
-                        GetDogHelp();
-                        break;
-
-                    case "fox":
-                        GetFoxHelp();
-                        break;
-
-                    case "raccoon":
-                        GetRaccoonHelp();
-                        break;
-
-                    case "redpanda":
-                        GetRedPandaHelp();
-                        break;
-
-                    case "topcrypto":
-                        GetTopCryptoHelp();
-                        break;
-
-                    case "crypto":
-                        GetCryptoHelp();
-                        break;
-
-                    case "catfact":
-                        GetCatFactHelp();
-                        break;
-
-                    case "plants":
-                        GetPlantsHelp();
-                        break;
-
-                    case "hug":
-                        GetHugHelp();
-                        break;
-
-                    case "stats":
-                        GetStatsHelp();
-                        break;
-
-                    case "spacepeople":
-                        GetSpacePeopleHelp();
-                        break;
-                }
+                await RespondAsync(embed: CreateCustomEmbed(title, content, Context.User));
             }
-
         }
+
+        [SlashCommand("info", "Want to learn more about me?")]
+        public async Task GetInfo()
+            => await RespondAsync(embed: CreateCustomEmbed(title: "Who am I?", content: "I am Cambot. My entire purpose is to provide you, my friend, with random information from the world of the internet! " +
+                "I am currently in beta, and therefore I am not the final product that the world desires, but alas, " +
+                "my developer is working hard everyday to make sure I am up to date and getting new and creative ways to feed you information\n\nTrouble getting started? Use **/help** to figure me out!\nWant to add me to your server? **/add**", user: Context.User));
+
+        // Suggestion command
+        [SlashCommand("suggestion", "Have an idea for Cambot? Send away!")]
+        public async Task GetSuggestion(string title, string idea)
+        {
+            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(idea)) await RespondAsync($"Please include a {(string.IsNullOrEmpty(title) ? "**title**" : "**idea**").ToString()}.");
+
+            try
+            {
+                JsonHandler.AddSuggestion(new SuggestionDetails()
+                {
+                    title = title,
+                    description = idea,
+                    userName = Context.User.Username,
+                    id = Context.User.Id,
+                    guild = Context.Guild.Name,
+                    guildId = Context.Guild.Id,
+                    currentTime = DateTime.Now
+                });
+
+                await RespondAsync(embed: CreateCustomEmbed(title: $"Thanks, {Context.User.Username}!", content: "Thank you for your suggestion!", user: Context.User));
+                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("UserID"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: idea + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 255, 0)));
+            }
+            catch(Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
+
+        // Bugsplat
+        [SlashCommand("bugsplat", "Found a bug?")]
+        public async Task BugSplat(string title, string bug)
+        {
+            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(bug)) await RespondAsync($"Please include a {(string.IsNullOrEmpty(title) ? "**title**" : "**bug**").ToString()}.");
+
+            try
+            {
+                JsonHandler.AddBug(new BugDetails()
+                {
+                    title = title,
+                    description = bug,
+                    userName = Context.User.Username,
+                    id = Context.User.Id,
+                    guild = Context.Guild.Name,
+                    guildId = Context.Guild.Id,
+                    currentTime = DateTime.Now
+                });
+
+                await RespondAsync(embed: CreateCustomEmbed(title: $"Thanks, {Context.User.Username}!", content: "Ewww, bugs! I'll get to squishing them right away!\nThanks for your report!", user: Context.User));
+                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("UserID"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: bug + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 0, 0)));
+            }
+            catch(Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
+        // Roll random number
+        [SlashCommand("roll", "Need a random number? Roll for one!")]
+        public async Task GetDiceRoll(int range) => await RespondAsync(embed: CreateCustomEmbed(title: "Rolling....", content: $"I rolled **{new Random().Next(range)}**!", user: Context.User));
+
+        // Add Cambot to server
+        [SlashCommand("add", "Want to add Cambot to your server?")]
+        public async Task AddCambot() => await RespondAsync(embed: CreateCustomEmbed(title: "Want to add Cambot to your server?", content: "You can use this link: [**https://bit.ly/invite_Cambot**] or, scan the QR code below!", 
+            image: ConfigurationHandler.GetConfigKey("QRCode"), credit: "Cambot", user: Context.User, timestamp: true));
+
 
         // Test command
         [SlashCommand("test", "this is a test command")]
@@ -323,15 +321,10 @@ namespace Cambot_3.Modules
 
         // Give hug to someone
         [SlashCommand("hug", "Send a hug to a friend!")]
-        [Alias("hugs")]
-        public async Task GiveHug(SocketUser user)
-        {
-            await RespondAsync(embed: CreateCustomEmbed(null, $"{Context.User.Mention} hugs {user.Mention}!!", GetHugGif(), "Cambot", user: Context.User));
-        }
+        public async Task GiveHug(SocketUser user) => await RespondAsync(embed: CreateCustomEmbed(null, $"{Context.User.Mention} hugs {user.Mention}!!", GetRandomHugGif(), "Cambot", user: Context.User));
 
         // Get random cat image
         [SlashCommand("cat", "Get a random cat picture!")]
-        [Alias("cats")]
         public async Task GetRandomCatImage()
         {
             CatsModel _response = await ApiFunctions.GetRandomCatImage();
@@ -348,7 +341,6 @@ namespace Cambot_3.Modules
 
         // Get a random fox image
         [SlashCommand("fox", "Get a random fox picture!")]
-        [Alias("foxes")]
         public async Task GetRandomFoxImage()
         {
             FoxModel _response = await ApiFunctions.GetRandomFoxImage();
@@ -366,7 +358,6 @@ namespace Cambot_3.Modules
 
         // Get a random dog image
         [SlashCommand("dog", "Get a random dog picture!")]
-        [Alias("dogs")]
         public async Task GetRandomDogImage()
         {
             DogModel _response = await ApiFunctions.GetRandomDogImages();
@@ -400,7 +391,6 @@ namespace Cambot_3.Modules
 
         // Get a random CatFact
         [SlashCommand("catfact", "Get a random cat fact!")]
-        [Alias("cfact")]
         public async Task GetRandomCatFact()
         {
             CatFactModel _response = await ApiFunctions.GetRandomCatFact();
