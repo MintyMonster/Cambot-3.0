@@ -20,7 +20,6 @@ namespace Cambot_3.utils.Levels
     {
         private static readonly PlayerLevelsEntities _db = new PlayerLevelsEntities();
         private static Dictionary<ulong, PlayerObject> Players = new Dictionary<ulong, PlayerObject>();
-
         public static double GetPlayerExperience(SocketUser user) => Players[user.Id].Experience;
         public static int GetPlayerLevel(SocketUser user) => Players[user.Id].Level;
 
@@ -32,10 +31,10 @@ namespace Cambot_3.utils.Levels
             {
                 double levelXp = Players[id].Level + (Players[id].Level * 100) * 1.2;
 
-                if((Players[id].Experience + 15) >= levelXp)
+                if((Players[id].Experience + 7) >= levelXp)
                 {
                     Players[id].Level += 1;
-                    Players[id].Experience = ((Players[id].Experience + 15) - levelXp);
+                    Players[id].Experience = ((Players[id].Experience + 7) - levelXp);
                     SendLevelUp(context);
                     Logger.Medium($"Player {Players[id].Username}, level: {Players[id].Level}, experience: {Players[id].Experience}");
                 }
@@ -113,9 +112,9 @@ namespace Cambot_3.utils.Levels
             double percentage = (Players[user.Id].Experience / levelXp) * 100;
             sb.Append("`[");
 
-            for (double i = 0; i <= 100; i += 5)
+            for (double i = 0; i <= 200; i += 5)
             {
-                if (i <= percentage) sb.Append("/");
+                if (i <= (percentage * 2)) sb.Append("/");
                 else sb.Append("-");
             }
 
@@ -143,6 +142,22 @@ namespace Cambot_3.utils.Levels
             embed.WithCurrentTimestamp();
 
             await context.Channel.SendMessageAsync(null, false, embed.Build());
+        }
+
+        public static string GetLeaderBoardDescending()
+        {
+            StringBuilder sb = new StringBuilder();
+            int i = 1;
+
+            foreach(var player in Players.OrderByDescending(x => x.Value.Level))
+            {
+                if (i >= 26) break;
+                string place = i == 1 ? ":first_place:" : i == 2 ? ":second_place:" : i == 3 ? ":third_place:" : $"{i.ToString()})";
+                sb.AppendLine($"{place} **{player.Value.Username} - Level {player.Value.Level}** ({player.Value.Experience}xp)");
+                i++;
+            }
+
+            return sb.ToString();
         }
     }
 }

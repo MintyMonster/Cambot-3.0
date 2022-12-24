@@ -51,7 +51,9 @@ namespace Cambot_3.utils
             Suggestion,
             Bug,
             Info,
-            Roll
+            Roll,
+            Level,
+            Leaderboard
         }
 
         private static Dictionary<CommandName, CommandType> commands = new Dictionary<CommandName, CommandType>()
@@ -79,7 +81,9 @@ namespace Cambot_3.utils
             { CommandName.Suggestion, new CommandType { name = "suggestion", parameter = CommandParams.Required, emoji = ":white_check_mark:", title = "Have a suggestion?", usage = "Usage: **/suggestion [*Required: title, idea*]**"} },
             { CommandName.Bug, new CommandType { name = "bugsplat", parameter = CommandParams.Required, emoji = ":x:", title = "Found a bug?", usage = "Usage: **/bugsplat [*Required: title, bug*]**"} },
             { CommandName.Info, new CommandType { name = "info", parameter = CommandParams.None, emoji = ":grey_question:", title = "Want to learn more about me? :grey_question:", usage = "Usage: **/info**" } },
-            { CommandName.Roll, new CommandType { name = "roll", parameter = CommandParams.Required, emoji = ":100:", title = "Random numbers without the dice! :100:", usage = "Usage: **/roll [*Required: range*]**"} }
+            { CommandName.Roll, new CommandType { name = "roll", parameter = CommandParams.Required, emoji = ":100:", title = "Random numbers without the dice! :100:", usage = "Usage: **/roll [*Required: range*]**"} },
+            { CommandName.Level, new CommandType { name = "level", parameter = CommandParams.Optional, emoji = ":arrow_up_small:", title = "Want to see your progression? :arrow_up_small:", usage = "Usage: **/level [*Optional: user*]**"} },
+            { CommandName.Leaderboard, new CommandType { name = "leaderboard", parameter = CommandParams.None, emoji = ":signal_strenght:", title = "Want to see the top levels? :signal_strength:", usage = "Usage: **/leaderboard**"} }
         };
 
         public static Dictionary<CommandName, CommandType> GetCommands()

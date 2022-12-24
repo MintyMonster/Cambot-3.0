@@ -91,12 +91,12 @@ namespace Cambot_3
 
                 LevelsDatabaseHandler.LoadAllPlayers();
 
-                _databaseTimer = new Timer(_ =>
+                _databaseTimer = new Timer( _ =>
                 {
                     LevelsDatabaseHandler.PushToDatabase();
                     Logger.Low("Players pushed to database");
 
-                }, null, (int)TimeSpan.FromSeconds(25).TotalMilliseconds, (int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+                }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
 
                 // Upon joining a guild, add 
                 client.JoinedGuild += async (SocketGuild guild) => await slashCommands.RegisterCommandsToGuildAsync(guild.Id);

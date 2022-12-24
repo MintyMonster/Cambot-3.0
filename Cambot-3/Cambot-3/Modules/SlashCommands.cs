@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -419,6 +420,7 @@ namespace Cambot_3.Modules
             await RespondAsync(embed: CreateCustomEmbed(title: $"Who's in space right now?", content: sb.ToString(), credit: "open-notify.org", user: Context.User, timestamp: true));
         }
 
+        // Top cryptocurrencies
         [SlashCommand("topcrypto", "Get the top 25 cryptocurrencies!", runMode: Discord.Interactions.RunMode.Async)]
         public async Task GetTopCryptos()
         {
@@ -429,6 +431,7 @@ namespace Cambot_3.Modules
             await RespondAsync(embed: CreateCustomEmbed(title: $"The Top 25 CryptoCurrencies!", content: sb.ToString(), credit: "coinlore.net", user: Context.User, timestamp: true));
         }
 
+        // Specific cryptocurrency
         [SlashCommand("crypto", "Need information about a specific crypto?", runMode: Discord.Interactions.RunMode.Async)]
         public async Task GetCrypto([Remainder] string name = "bitcoin")
         {
@@ -440,6 +443,7 @@ namespace Cambot_3.Modules
                 credit: "coinlore.net", user: Context.User, timestamp: true));
         }
 
+        // Plants
         [SlashCommand("plants", "Need information about a plant? Look no further!", runMode: Discord.Interactions.RunMode.Async)]
         public async Task GetPlants([Remainder] string plant = null) // This is so ugly please make it nicer to look at Cameron
         {
@@ -508,6 +512,7 @@ namespace Cambot_3.Modules
             }
         }
 
+        // Facts about years
         [SlashCommand("yearfact", "Anybody want a random fact about a year?")]
         public async Task GetYearFact([Remainder] string year = null)
         {
@@ -519,6 +524,7 @@ namespace Cambot_3.Modules
                 await RespondAsync($"There are no facts for that year :confused: Please try again!");
         }
 
+        // Facts about Maths
         [SlashCommand("mathfact", "Anybody want a random math fact?")]
         public async Task GetMathFact([Remainder] string number = null)
         {
@@ -530,6 +536,7 @@ namespace Cambot_3.Modules
                 await RespondAsync($"We couldn't find any facts about that number! :confused: Please try again!");
         }
 
+        // Weather in the area
         [SlashCommand("weather", "Want the weather in your location?")]
         public async Task GetCurrentWeather([Remainder] string city = null)
         {
@@ -550,12 +557,23 @@ namespace Cambot_3.Modules
                 Logger.Error(ex);
             }
         }
-
+        
+        // Get your current level, or someone else's
         [SlashCommand("level", "Check your level")]
-        public async Task GetCurrentLevel()
+        public async Task GetCurrentLevel([Remainder] SocketUser user = null)
         {
-            await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s stats!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User)} experience** " +
-                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User)}**\n\n__Progress:__\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+            if (user == null)
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s Level!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User)} experience** " +
+                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User)}**\n\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+            else
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{user.Username}'s Level!", content: $"{user.Username}'s currently **{LevelsDatabaseHandler.GetPlayerExperience(user)} experience** " +
+                    $"into **level {LevelsDatabaseHandler.GetPlayerLevel(user)}**\n\n{LevelsDatabaseHandler.ExperienceBar(user)}", timestamp: true, credit: "Cambot levels", user: Context.User));
         }
+
+        // Level's leaderboard
+        [SlashCommand("leaderboard", "Get the leaderboard of levels")]
+        public async Task GetLeaderboard() => await RespondAsync(embed: CreateCustomEmbed(title: $"Leaderboard!", content: $"{LevelsDatabaseHandler.GetLeaderBoardDescending()}" +
+            $"\nEarn **experience** by using commands!\nExperience and levels are counted for globally,\nwhich means across all servers!\nWant to see what your level is? Use **/level**", timestamp: true, credit: "Cambot", user: Context.User));
+
     }
 }
