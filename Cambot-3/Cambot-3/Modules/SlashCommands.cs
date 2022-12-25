@@ -209,7 +209,7 @@ namespace Cambot_3.Modules
                 });
 
                 await RespondAsync(embed: CreateCustomEmbed(title: $"Thanks, {Context.User.Username}!", content: "Thank you for your suggestion!", user: Context.User));
-                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("UserID"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: idea + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 255, 0)));
+                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("DevKey"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: idea + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 255, 0)));
             }
             catch(Exception ex)
             {
@@ -237,7 +237,7 @@ namespace Cambot_3.Modules
                 });
 
                 await RespondAsync(embed: CreateCustomEmbed(title: $"Thanks, {Context.User.Username}!", content: "Ewww, bugs! I'll get to squishing them right away!\nThanks for your report!", user: Context.User));
-                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("UserID"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: bug + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 0, 0)));
+                await Context.Client.GetUserAsync(ulong.Parse(ConfigurationHandler.GetConfigKey("DevKey"))).Result.SendMessageAsync(embed: CreateCustomEmbed(title: title, content: bug + $"\n\n**From:** {Context.User.Username}\n**Guild:** {Context.Guild.Name}", color: new Color(255, 0, 0)));
             }
             catch(Exception ex)
             {
@@ -563,11 +563,11 @@ namespace Cambot_3.Modules
         public async Task GetCurrentLevel([Remainder] SocketUser user = null)
         {
             if (user == null)
-                await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s Level!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User)} experience** " +
-                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User)}**\n\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s Level!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User.Id)} experience** " +
+                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User.Id)}**\n\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
             else
-                await RespondAsync(embed: CreateCustomEmbed(title: $"{user.Username}'s Level!", content: $"{user.Username}'s currently **{LevelsDatabaseHandler.GetPlayerExperience(user)} experience** " +
-                    $"into **level {LevelsDatabaseHandler.GetPlayerLevel(user)}**\n\n{LevelsDatabaseHandler.ExperienceBar(user)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{user.Username}'s Level!", content: $"{user.Username}'s currently **{LevelsDatabaseHandler.GetPlayerExperience(user.Id)} experience** " +
+                    $"into **level {LevelsDatabaseHandler.GetPlayerLevel(user.Id)}**\n\n{LevelsDatabaseHandler.ExperienceBar(user)}", timestamp: true, credit: "Cambot levels", user: Context.User));
         }
 
         // Level's leaderboard

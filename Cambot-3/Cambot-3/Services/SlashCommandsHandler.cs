@@ -30,31 +30,33 @@ namespace Cambot_3
 
         public async Task InitialiseAsync()
         {
+            Logger.Low("Slash commands initialising...");
             await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), _services);
 
             _client.InteractionCreated += HandleInteraction;
-
-            _commands.SlashCommandExecuted += SlashCommandExecuted;
             _commands.ContextCommandExecuted += ContextCommandExecuted;
             _commands.ComponentCommandExecuted += ComponentCommandExecuted;
+
+            _commands.SlashCommandExecuted += SlashCommandExecuted;
+            Logger.Low("Slash commands initialised!");
         }
 
         private Task ComponentCommandExecuted(ComponentCommandInfo info, IInteractionContext context, IResult result) => Task.CompletedTask;
 
         private Task ContextCommandExecuted(ContextCommandInfo info, IInteractionContext context, IResult result) => Task.CompletedTask;
 
-        private Task SlashCommandExecuted(SlashCommandInfo info, IInteractionContext context, IResult result) =>Task.CompletedTask;
+        private async Task SlashCommandExecuted(SlashCommandInfo info, IInteractionContext context, IResult result)
+        {
+            if (result.IsSuccess) LevelsDatabaseHandler.HandleCommandExperience(context.User.Id, context.User.Username, context);
+            await Task.CompletedTask;
+        }
 
         private async Task HandleInteraction(SocketInteraction arg)
         {
             try
             {
                 var context = new SocketInteractionContext(_client, arg);
-
-                // Levelling code
-                LevelsDatabaseHandler.HandleCommandExperience(_client.GetUser(context.User.Id).Id, _client.GetUser(context.User.Id).Username, context);
-                Logger.Error(_client.GetUser(context.User.Id).Id.ToString());
-
+                //LevelsDatabaseHandler.HandleCommandExperience(context.User.Id, context.User.Username, context);
                 await _commands.ExecuteCommandAsync(context, _services);
             }
             catch(Exception ex)

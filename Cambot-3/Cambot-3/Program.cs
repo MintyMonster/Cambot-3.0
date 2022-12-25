@@ -13,12 +13,13 @@ using Microsoft.Extensions.Logging;
 using System.IO;
 using Cambot_3.utils.JSON;
 using Cambot_3.utils.Levels;
+using Discord.Commands;
+using Cambot_3.Services;
 
 namespace Cambot_3
 {
     class Program
     {
-        private DiscordSocketClient _client;
         private readonly IServiceProvider _serviceProvidor;
         private readonly IConfiguration _config;
         private Timer _timer;
@@ -42,6 +43,7 @@ namespace Cambot_3
                 var slashCommands = _serviceProvidor.GetRequiredService<InteractionService>();
 
                 await _serviceProvidor.GetRequiredService<SlashCommandsHandler>().InitialiseAsync();
+                await _serviceProvidor.GetRequiredService<CommandHandler>().InitialiseAsync();
 
                 // Logging
                 client.Log += async (LogMessage message) =>
@@ -66,6 +68,9 @@ namespace Cambot_3
                     Logger.Low($"{DateTime.Now} => Cambot is now online!");
                     await Task.CompletedTask;
                 };
+                
+                client.Disconnected += async (message) => Logger.Fatal($"Cambot Disconnected\n{message.Message}");
+                client.LoggedOut += async () => Logger.Fatal("Cambot Logged out");
 
                 // Logging for all commands
                 slashCommands.Log += async (LogMessage message) =>
@@ -96,7 +101,7 @@ namespace Cambot_3
                     LevelsDatabaseHandler.PushToDatabase();
                     Logger.Low("Players pushed to database");
 
-                }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+                }, null, (int)TimeSpan.FromSeconds(25).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
 
                 // Upon joining a guild, add 
                 client.JoinedGuild += async (SocketGuild guild) => await slashCommands.RegisterCommandsToGuildAsync(guild.Id);
@@ -118,7 +123,7 @@ namespace Cambot_3
             return new ServiceCollection()
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
-                    GatewayIntents = Discord.GatewayIntents.AllUnprivileged,
+                    GatewayIntents = Discord.GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,
                     LogGatewayIntentWarnings = false,
                     LogLevel = LogSeverity.Debug,
                     AlwaysDownloadUsers = true,
@@ -130,8 +135,9 @@ namespace Cambot_3
                 .AddSingleton<JsonHandler>()
                 .AddSingleton<PlayerLevelsEntities>()
                 .AddSingleton<LevelsDatabaseHandler>()
+                .AddSingleton<CommandService>()
+                .AddSingleton<CommandHandler>()
                 .BuildServiceProvider();
         }
-        
     }
 }

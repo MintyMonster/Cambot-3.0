@@ -20,33 +20,54 @@ namespace Cambot_3.utils.Levels
     {
         private static readonly PlayerLevelsEntities _db = new PlayerLevelsEntities();
         private static Dictionary<ulong, PlayerObject> Players = new Dictionary<ulong, PlayerObject>();
-        public static double GetPlayerExperience(SocketUser user) => Players[user.Id].Experience;
-        public static int GetPlayerLevel(SocketUser user) => Players[user.Id].Level;
 
-        public static void HandleCommandExperience(ulong id, string username, SocketInteractionContext context)
+        // Private
+        private static bool PlayerExists(ulong id) => Players.ContainsKey(id);
+        private static void CreatePlayer(IInteractionContext context) => 
+            Players.Add(context.User.Id, new PlayerObject() { ID = context.User.Id, Username = context.User.Username, Experience = 15, Level = 1 });
+        private static void CreatePlayer(ulong id, string username, int level, double experience) => 
+            Players.Add(id, new PlayerObject() { ID = id, Username = username, Experience = experience, Level = level });
+        private static void AddExperience(ulong id) => Players[id].Experience += 7;
+        private static void SetExperience(ulong id, double levelXp) => Players[id].Experience = ((Players[id].Experience + 7) - levelXp);
+        private static void AddLevel(ulong id) => Players[id].Level++;
+        private static double GetLevelExperience(ulong id) => Players[id].Level + (Players[id].Level * 100) * 1.2;
+        private static async void AddToDatabase(ulong id, string username, int level, double experience) =>
+            await _db.PlayersDB.AddAsync(new LevelsLeaderboardModel() { UserID = id, Username = username, Experience = experience, Level = level });
+        // Public
+        public static double GetPlayerExperience(ulong id) => PlayerExists(id) ? Players[id].Experience : 15;
+        public static int GetPlayerLevel(ulong id) => PlayerExists(id) ? Players[id].Level : 1;
+        public static int GetPlayerCount() => Players.Count;
+
+        public static void ResetPlayers()
         {
-            if (!(Players.ContainsKey(id)))
-                Players.Add(id, new PlayerObject() { ID = id, Username = username, Experience = 15, Level = 1 });
+            Players.ToList().ForEach(x =>
+            {
+                x.Value.Level = 1;
+                x.Value.Experience = 0;
+                Logger.Error($"{x.Value.Username} purged");
+            });
+        }
+
+        public static void HandleCommandExperience(ulong id, string username, IInteractionContext context)
+        {
+
+            if (!PlayerExists(id)) CreatePlayer(context);
             else
             {
-                double levelXp = Players[id].Level + (Players[id].Level * 100) * 1.2;
-
-                if((Players[id].Experience + 7) >= levelXp)
+                if(GetPlayerExperience(id) + 7 >= GetLevelExperience(id))
                 {
-                    Players[id].Level += 1;
-                    Players[id].Experience = ((Players[id].Experience + 7) - levelXp);
+                    SetExperience(id, GetLevelExperience(id));
+                    AddLevel(id);
                     SendLevelUp(context);
                     Logger.Medium($"Player {Players[id].Username}, level: {Players[id].Level}, experience: {Players[id].Experience}");
                 }
                 else
                 {
-                    Players[id].Experience += 15;
+                    AddExperience(id);
                     Logger.Medium($"Player {Players[id].ID} {Players[id].Username}, experience added: {Players[id].Experience}");
+
                 }
             }
-
-            Players.ToList().ForEach(x => Logger.Medium(x.Key.ToString()));
-
         }
 
         public static void LoadAllPlayers()
@@ -55,29 +76,16 @@ namespace Cambot_3.utils.Levels
             try
             {
                 foreach (var player in _db.PlayersDB)
-                {
-                    if (player != null && _db.PlayersDB.Count() != 0)
-                    {
-                        Players.Add((ulong)player.UserID, new PlayerObject()
-                        {
-                            ID = (ulong)player.UserID,
-                            Username = player.Username,
-                            Level = player.Level,
-                            Experience = player.Experience
-                        });
-                    }
-                    else
-                    {
-                        Logger.Medium("No players exist");
-                    }
-                }
-            }
-            catch (Exception ex)
+                    if (player != null && _db.PlayersDB.Count() > 0)
+                        CreatePlayer(player.UserID, player.Username, player.Level, player.Experience);
+            }catch(Exception e)
             {
-                Logger.Fatal(ex);
+                Logger.Fatal(e.Message);
             }
             Logger.Low("Players loaded!");
         }
+
+        
 
         public static async void PushToDatabase()
         {
@@ -91,13 +99,7 @@ namespace Cambot_3.utils.Levels
                 }
                 else
                 {
-                    await _db.PlayersDB.AddAsync(new LevelsLeaderboardModel()
-                    {
-                        UserID = p.Value.ID, // Weird id?
-                        Username = p.Value.Username,
-                        Experience = p.Value.Experience,
-                        Level = p.Value.Level
-                    });
+                    AddToDatabase(p.Value.ID, p.Value.Username, p.Value.Level, p.Value.Experience);
                     Logger.Low($"Player added, {p.Key}, {p.Value.Username}, {p.Value.Experience}, {p.Value.Level}");
                 }
             }
@@ -108,8 +110,8 @@ namespace Cambot_3.utils.Levels
         public static string ExperienceBar(SocketUser user)
         {
             StringBuilder sb = new StringBuilder();
-            double levelXp = Players[user.Id].Level + (Players[user.Id].Level * 100) * 1.2;
-            double percentage = (Players[user.Id].Experience / levelXp) * 100;
+            
+            double percentage = (Players[user.Id].Experience / GetLevelExperience(user.Id)) * 100;
             sb.Append("`[");
 
             for (double i = 0; i <= 200; i += 5)
@@ -122,7 +124,7 @@ namespace Cambot_3.utils.Levels
             return sb.ToString();
         }
 
-        public static async void SendLevelUp(SocketInteractionContext context)
+        public static async void SendLevelUp(IInteractionContext context)
         {
             var footer = new EmbedFooterBuilder();
             footer.Text = "Cambot";
@@ -135,7 +137,7 @@ namespace Cambot_3.utils.Levels
 
             var embed = new EmbedBuilder();
             embed.Title = "Level up!";
-            embed.Description = $"{context.User.Username} just leveled up to **level {GetPlayerLevel(context.User)}**!\nIt's **{Players[context.User.Id].Level + (Players[context.User.Id].Level * 100) * 1.2} experience** to **level {GetPlayerLevel(context.User) + 1}**!";
+            embed.Description = $"{context.User.Username} just leveled up to **level {GetPlayerLevel(context.User.Id)}**!\nIt's **{Players[context.User.Id].Level + (Players[context.User.Id].Level * 100) * 1.2} experience** to **level {GetPlayerLevel(context.User.Id) + 1}**!";
             embed.Color = new Color(127, 109, 188);
             embed.Author = author;
             embed.Footer = footer;
