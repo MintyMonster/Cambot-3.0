@@ -20,6 +20,7 @@ namespace Cambot_3
         private readonly InteractionService _commands;
         private readonly IServiceProvider _services;
         private readonly PlayerLevelsEntities _db;
+        private LevelsDatabaseHandler _levelsDb;
 
         public SlashCommandsHandler(DiscordSocketClient client, InteractionService commands, IServiceProvider services)
         {
@@ -27,6 +28,7 @@ namespace Cambot_3
             _commands = commands;
             _services = services;
             _db = _services.GetRequiredService<PlayerLevelsEntities>();
+            _levelsDb = LevelsDatabaseHandler.GetInstance();
         }
 
         public async Task InitialiseAsync()
@@ -48,7 +50,7 @@ namespace Cambot_3
 
         private async Task SlashCommandExecuted(SlashCommandInfo info, IInteractionContext context, IResult result)
         {
-            if (result.IsSuccess) LevelsDatabaseHandler.HandleCommandExperience(context.User.Id, context.User.Username, context);
+            if (result.IsSuccess) _levelsDb.HandleCommandExperience(context.User.Id, context.User.Username, context);
             await Task.CompletedTask;
         }
 

@@ -26,12 +26,14 @@ namespace Cambot_3.Modules
         private DiscordSocketClient _client;
         private IServiceProvider _services;
         private Dictionary<CommandUtils.CommandName, CommandUtils.CommandType> _commandDict;
+        private LevelsDatabaseHandler _levelsDb;
 
         public SlashCommands(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
             _commandDict = CommandUtils.GetCommands();
+            _levelsDb = LevelsDatabaseHandler.GetInstance();
         }
 
         // For weather for the Americans
@@ -564,16 +566,16 @@ namespace Cambot_3.Modules
         public async Task GetCurrentLevel([Remainder] SocketUser user = null)
         {
             if (user == null)
-                await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s Level!", content: $"You are currently **{LevelsDatabaseHandler.GetPlayerExperience(Context.User.Id)} experience** " +
-                $"into **level {LevelsDatabaseHandler.GetPlayerLevel(Context.User.Id)}**\n\n{LevelsDatabaseHandler.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{Context.User.Username}'s Level!", content: $"You are currently **{_levelsDb.GetPlayerExperience(Context.User.Id)} experience** " +
+                $"into **level {_levelsDb.GetPlayerLevel(Context.User.Id)}**\n\n{_levelsDb.ExperienceBar(Context.User)}", timestamp: true, credit: "Cambot levels", user: Context.User));
             else
-                await RespondAsync(embed: CreateCustomEmbed(title: $"{user.Username}'s Level!", content: $"{user.Username}'s currently **{LevelsDatabaseHandler.GetPlayerExperience(user.Id)} experience** " +
-                    $"into **level {LevelsDatabaseHandler.GetPlayerLevel(user.Id)}**\n\n{LevelsDatabaseHandler.ExperienceBar(user)}", timestamp: true, credit: "Cambot levels", user: Context.User));
+                await RespondAsync(embed: CreateCustomEmbed(title: $"{user.Username}'s Level!", content: $"{user.Username}'s currently **{_levelsDb.GetPlayerExperience(user.Id)} experience** " +
+                    $"into **level {_levelsDb.GetPlayerLevel(user.Id)}**\n\n{_levelsDb.ExperienceBar(user)}", timestamp: true, credit: "Cambot levels", user: Context.User));
         }
 
         // Level's leaderboard
         [SlashCommand("leaderboard", "Get the leaderboard of levels")]
-        public async Task GetLeaderboard() => await RespondAsync(embed: CreateCustomEmbed(title: $"Leaderboard!", content: $"{LevelsDatabaseHandler.GetLeaderBoardDescending()}" +
+        public async Task GetLeaderboard() => await RespondAsync(embed: CreateCustomEmbed(title: $"Leaderboard!", content: $"{_levelsDb.GetLeaderBoardDescending()}" +
             $"\nEarn **experience** by using commands!\nExperience and levels are counted for globally,\nwhich means across all servers!\nWant to see what your level is? Use **/level**", timestamp: true, credit: "Cambot", user: Context.User));
 
     }

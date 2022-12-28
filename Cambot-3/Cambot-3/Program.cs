@@ -26,11 +26,13 @@ namespace Cambot_3
         private readonly IConfiguration _config;
         private Timer _timer;
         private Timer _databaseTimer;
+        private LevelsDatabaseHandler _levelsDb;
 
         //private IConfiguration _config;
         public Program()
         {
             _serviceProvidor = ConfigureServices();
+            _levelsDb = LevelsDatabaseHandler.GetInstance();
 
             _config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile(path: "ConfigurationFile.json").Build();
         }
@@ -102,11 +104,11 @@ namespace Cambot_3
 
                 }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
 
-                LevelsDatabaseHandler.LoadAllPlayers(); // Load all players into a dictionary of PlayerObjects
+                _levelsDb.LoadAllPlayers(); // Load all players into a dictionary of PlayerObjects
 
                 _databaseTimer = new Timer( _ => // Push all data saved in the dictionary to database on timer
                 {
-                    LevelsDatabaseHandler.PushToDatabase();
+                    _levelsDb.PushToDatabase();
                     Logger.Low("Players pushed to database");
 
                 }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
