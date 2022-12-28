@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Cambot_3
+namespace Cambot_3.utils.Logging
 {
     public static class Logger
     {
@@ -22,14 +22,14 @@ namespace Cambot_3
 
         private static void Log(LogLevel logLevel = LogLevel.Debug, string message = null)
         {
-            
 
-            Console.ForegroundColor = logLevel == LogLevel.Debug 
-                ? ConsoleColor.Gray : logLevel == LogLevel.Low 
-                ? ConsoleColor.Green : logLevel == LogLevel.Medium 
-                ? ConsoleColor.Yellow : logLevel == LogLevel.Fatal 
-                ? ConsoleColor.DarkRed : logLevel == LogLevel.Error 
-                ? ConsoleColor.Red : logLevel == LogLevel.Info 
+
+            Console.ForegroundColor = logLevel == LogLevel.Debug
+                ? ConsoleColor.Gray : logLevel == LogLevel.Low
+                ? ConsoleColor.Green : logLevel == LogLevel.Medium
+                ? ConsoleColor.Yellow : logLevel == LogLevel.Fatal
+                ? ConsoleColor.DarkRed : logLevel == LogLevel.Error
+                ? ConsoleColor.Red : logLevel == LogLevel.Info
                 ? ConsoleColor.White : ConsoleColor.White;
 
             Console.WriteLine(message ?? "Something went wrong...");
@@ -47,7 +47,7 @@ namespace Cambot_3
         public static void Medium(string message = null) => Log(LogLevel.Medium, message);
         public static void Medium(Exception exception) => Log(LogLevel.Medium, exception.ToString());
         public static void Fatal(string message = null) => Log(LogLevel.Fatal, message);
-        public static void Fatal(Exception exception)=> Log(LogLevel.Fatal, exception.ToString());
+        public static void Fatal(Exception exception) => Log(LogLevel.Fatal, exception.ToString());
         public static void Error(string message = null) => Log(LogLevel.Error, message);
         public static void Error(Exception exception) => Log(LogLevel.Error, exception.ToString());
         public static void Info(string message = null) => Log(LogLevel.Info, message);

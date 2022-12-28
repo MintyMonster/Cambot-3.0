@@ -15,6 +15,8 @@ using Cambot_3.utils.JSON;
 using Cambot_3.utils.Levels;
 using Discord.Commands;
 using Cambot_3.Services;
+using System.Data.SQLite;
+using Cambot_3.utils.Logging;
 
 namespace Cambot_3
 {
@@ -26,7 +28,6 @@ namespace Cambot_3
         private Timer _databaseTimer;
 
         //private IConfiguration _config;
-        //private string token = "MTA1MTI0NTc5OTE4NDU0Mzc3NA.GQFiD7.ICKPCqtSFjDnYG7ty3vOd_3suwv6X0iESrAYC0"; // "Cambot"
         public Program()
         {
             _serviceProvidor = ConfigureServices();
@@ -35,45 +36,45 @@ namespace Cambot_3
         }
         public static void Main(String[] args) => new Program().MainAsync().GetAwaiter().GetResult();
 
-        public async Task MainAsync()
+        public async Task MainAsync() // Main
         {
             try
             {
-                var client = _serviceProvidor.GetRequiredService<DiscordSocketClient>();
-                var slashCommands = _serviceProvidor.GetRequiredService<InteractionService>();
+                var client = _serviceProvidor.GetRequiredService<DiscordSocketClient>(); // Get DiscordSocketclient
+                var slashCommands = _serviceProvidor.GetRequiredService<InteractionService>(); // Get SlashCommandHandler service
 
-                await _serviceProvidor.GetRequiredService<SlashCommandsHandler>().InitialiseAsync();
-                await _serviceProvidor.GetRequiredService<CommandHandler>().InitialiseAsync();
+                await _serviceProvidor.GetRequiredService<SlashCommandsHandler>().InitialiseAsync(); // Initialise Slash commands
+                await _serviceProvidor.GetRequiredService<CommandHandler>().InitialiseAsync(); // Initialise text commands
 
                 // Logging
-                client.Log += async (LogMessage message) =>
+                client.Log += async (LogMessage message) => // Client logging
                 {
                     Logger.Info($"Client: {message.Message}");
                     await Task.CompletedTask;
                 };
 
-                client.Connected += async () =>
+                client.Connected += async () => // Connection event log
                 {
                     Logger.Low("Connected to Discord Gateway.");
                     await Task.CompletedTask;
                 };
 
                 // Once client is ready
-                client.Ready += async () =>
+                client.Ready += async () => // Ready event log
                 { 
                     client.Guilds.ToList().ForEach(async x =>
                     {
-                        await slashCommands.RegisterCommandsToGuildAsync(x.Id);
+                        await slashCommands.RegisterCommandsToGuildAsync(x.Id); // Register commands for every guild found
                     });
                     Logger.Low($"{DateTime.Now} => Cambot is now online!");
                     await Task.CompletedTask;
                 };
                 
-                client.Disconnected += async (message) => Logger.Fatal($"Cambot Disconnected\n{message.Message}");
-                client.LoggedOut += async () => Logger.Fatal("Cambot Logged out");
+                client.Disconnected += async (message) => Logger.Fatal($"Cambot Disconnected\n{message.Message}"); // Show when disconnected
+                client.LoggedOut += async () => Logger.Fatal("Cambot Logged out"); // Show when logged out
 
                 // Logging for all commands
-                slashCommands.Log += async (LogMessage message) =>
+                slashCommands.Log += async (LogMessage message) => // Log slash commands
                 {
                     Logger.Info($"Command: {message.Message}");
                     await Task.CompletedTask;
@@ -81,44 +82,51 @@ namespace Cambot_3
 
 
                 // Ensure files exist + log
-                if (!File.Exists(AppContext.BaseDirectory + "suggestions.json")) File.Create(AppContext.BaseDirectory + "suggestions.json").Close();
-                if (!File.Exists(AppContext.BaseDirectory + "bugs.json")) File.Create(AppContext.BaseDirectory + "bugs.json").Close();
-                if (File.Exists(AppContext.BaseDirectory + "suggestions.json") && File.Exists(AppContext.BaseDirectory + "bugs.json")) Logger.Low("Found required files...");
+                if (!File.Exists(AppContext.BaseDirectory + "suggestions.json")) File.Create(AppContext.BaseDirectory + "suggestions.json").Close(); // If not exists, create suggestions.json
+                if (!File.Exists(AppContext.BaseDirectory + "bugs.json")) File.Create(AppContext.BaseDirectory + "bugs.json").Close(); // If not exists, create bugs.json
+
+                if (File.Exists(AppContext.BaseDirectory + "suggestions.json")
+                    && File.Exists(AppContext.BaseDirectory + "bugs.json")
+                    && File.Exists(AppContext.BaseDirectory + "CamCoins.db")
+                    && File.Exists(AppContext.BaseDirectory + "PlayersDB.db"))
+                    Logger.Low("Found required files..."); // User validation
+                else
+                    throw new Exception("One or more files seem to be missing. Have they been created?");
 
                 // Save Bugs and Suggestions to JSON every 10 minues
-                _timer = new Timer( _ =>
+                _timer = new Timer( _ => // Timer to save the Suggestions and bugs to JSON
                 {
-                    JsonHandler.SendSuggestionsToJson();
-                    JsonHandler.SendBugsToJson();
+                    JsonHandler.SendSuggestionsToJson(); // Suggestions pushing handler
+                    JsonHandler.SendBugsToJson(); // Bugs pushing handler
                     Logger.Low("Json saved.");
 
                 }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
 
-                LevelsDatabaseHandler.LoadAllPlayers();
+                LevelsDatabaseHandler.LoadAllPlayers(); // Load all players into a dictionary of PlayerObjects
 
-                _databaseTimer = new Timer( _ =>
+                _databaseTimer = new Timer( _ => // Push all data saved in the dictionary to database on timer
                 {
                     LevelsDatabaseHandler.PushToDatabase();
                     Logger.Low("Players pushed to database");
 
-                }, null, (int)TimeSpan.FromSeconds(25).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+                }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
 
                 // Upon joining a guild, add 
-                client.JoinedGuild += async (SocketGuild guild) => await slashCommands.RegisterCommandsToGuildAsync(guild.Id);
+                client.JoinedGuild += async (SocketGuild guild) => await slashCommands.RegisterCommandsToGuildAsync(guild.Id); // Register all commands upon joining a guild
 
-                await client.LoginAsync(TokenType.Bot, ConfigurationHandler.GetConfigKey("Token"));
-                await client.StartAsync();
-                await client.SetGameAsync("Under construction...");
+                await client.LoginAsync(TokenType.Bot, ConfigurationHandler.GetConfigKey("Token")); // Login
+                await client.StartAsync(); // Start the bot
+                await client.SetGameAsync("Under construction..."); // Set visible game
 
-                API.ApiHelper.InitialiseClient();
+                API.ApiHelper.InitialiseClient(); // Initialise API handler
             }
             catch(Exception ex) { Logger.Fatal(ex); }
-            finally { Logger.Low("Everything is now initialised!"); }
+            finally { Logger.Low("Everything is now initialised!"); } 
 
-            await Task.Delay(Timeout.Infinite);
+            await Task.Delay(Timeout.Infinite); // Run until told to
         }
 
-        private IServiceProvider ConfigureServices()
+        private IServiceProvider ConfigureServices() // Grab services
         {
             return new ServiceCollection()
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig

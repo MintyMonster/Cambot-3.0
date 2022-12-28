@@ -5,6 +5,7 @@ using Cambot_3.API.ApiModels.Trefle;
 using Cambot_3.utils;
 using Cambot_3.utils.JSON;
 using Cambot_3.utils.Levels;
+using Cambot_3.utils.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;

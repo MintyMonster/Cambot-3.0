@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using Cambot_3.utils.Logging;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +12,6 @@ using System.Numerics;
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
-using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Cambot_3.utils.Levels
 {

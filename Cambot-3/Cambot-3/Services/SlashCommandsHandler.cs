@@ -1,4 +1,5 @@
 ﻿using Cambot_3.utils.Levels;
+using Cambot_3.utils.Logging;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
