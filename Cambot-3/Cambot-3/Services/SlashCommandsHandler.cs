@@ -28,7 +28,7 @@ namespace Cambot_3
             _commands = commands;
             _services = services;
             _db = _services.GetRequiredService<PlayerLevelsEntities>();
-            _levelsDb = LevelsDatabaseHandler.GetInstance();
+            _levelsDb = LevelsDatabaseHandler.Instance;
         }
 
         public async Task InitialiseAsync()

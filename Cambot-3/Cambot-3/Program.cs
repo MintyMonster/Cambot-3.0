@@ -16,6 +16,8 @@ using Cambot_3.utils.Levels;
 using Discord.Commands;
 using Cambot_3.Services;
 using System.Data.SQLite;
+using Cambot_3.utils.CamCoins;
+using Cambot_3.utils.CommandStuffs;
 using Cambot_3.utils.Logging;
 
 namespace Cambot_3
@@ -27,12 +29,16 @@ namespace Cambot_3
         private Timer _timer;
         private Timer _databaseTimer;
         private LevelsDatabaseHandler _levelsDb;
+        private CoinsDatabaseHandler _coinsDb;
+        private CommandsUsedLeaderboardHandler _commandsUsedLeaderboardDb;
 
         //private IConfiguration _config;
         public Program()
         {
             _serviceProvidor = ConfigureServices();
-            _levelsDb = LevelsDatabaseHandler.GetInstance();
+            _levelsDb = LevelsDatabaseHandler.Instance;
+            _coinsDb = CoinsDatabaseHandler.Instance;
+            _commandsUsedLeaderboardDb = CommandsUsedLeaderboardHandler.Instance;
 
             _config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile(path: "ConfigurationFile.json").Build();
         }
@@ -102,7 +108,7 @@ namespace Cambot_3
                     JsonHandler.SendBugsToJson(); // Bugs pushing handler
                     Logger.Low("Json saved.");
 
-                }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+                }, null, (int)TimeSpan.FromMinutes(2).TotalMilliseconds, (int)TimeSpan.FromMinutes(2).TotalMilliseconds);
 
                 _levelsDb.LoadAllPlayers(); // Load all players into a dictionary of PlayerObjects
 
@@ -111,7 +117,7 @@ namespace Cambot_3
                     _levelsDb.PushToDatabase();
                     Logger.Low("Players pushed to database");
 
-                }, null, (int)TimeSpan.FromMinutes(10).TotalMilliseconds, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+                }, null, (int)TimeSpan.FromMinutes(2).TotalMilliseconds, (int)TimeSpan.FromMinutes(2).TotalMilliseconds);
 
                 // Upon joining a guild, add 
                 client.JoinedGuild += async (SocketGuild guild) => await slashCommands.RegisterCommandsToGuildAsync(guild.Id); // Register all commands upon joining a guild

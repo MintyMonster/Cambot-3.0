@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Cambot_3.utils
+namespace Cambot_3.utils.CommandStuffs
 {
     public class CommandUtils
     {
@@ -17,44 +17,6 @@ namespace Cambot_3.utils
             public string title { get; set; }
             public string usage { get; set; }
         };
-
-        public enum CommandParams
-        {
-            None,
-            Optional,
-            Required
-        }
-
-        public enum CommandName
-        {
-            Help,
-            Dadjoke,
-            Apod,
-            Iss,
-            Mars,
-            Yearfact,
-            Mathfact,
-            Weather,
-            Cat,
-            Dog,
-            Fox,
-            Raccoon,
-            Redpanda,
-            TopCrypto,
-            Crypto,
-            Catfact,
-            Plants,
-            Hug,
-            Stats,
-            Spacepeople,
-            Add,
-            Suggestion,
-            Bug,
-            Info,
-            Roll,
-            Level,
-            Leaderboard
-        }
 
         private static Dictionary<CommandName, CommandType> commands = new Dictionary<CommandName, CommandType>()
         {
@@ -83,13 +45,11 @@ namespace Cambot_3.utils
             { CommandName.Info, new CommandType { name = "info", parameter = CommandParams.None, emoji = ":grey_question:", title = "Want to learn more about me? :grey_question:", usage = "Usage: **/info**" } },
             { CommandName.Roll, new CommandType { name = "roll", parameter = CommandParams.Required, emoji = ":100:", title = "Random numbers without the dice! :100:", usage = "Usage: **/roll [*Required: range*]**"} },
             { CommandName.Level, new CommandType { name = "level", parameter = CommandParams.Optional, emoji = ":arrow_up_small:", title = "Want to see your progression? :arrow_up_small:", usage = "Usage: **/level [*Optional: user*]**"} },
-            { CommandName.Leaderboard, new CommandType { name = "leaderboard", parameter = CommandParams.None, emoji = ":signal_strength:", title = "Want to see the top levels? :signal_strength:", usage = "Usage: **/leaderboard**"} }
+            { CommandName.Leaderboard, new CommandType { name = "leaderboard", parameter = CommandParams.None, emoji = ":signal_strength:", title = "Want to see the top levels? :signal_strength:", usage = "Usage: **/leaderboard**"} },
+            { CommandName.Hug, new CommandType { name = "hug", parameter = CommandParams.Required, emoji = ":hugging:", title = "Gimme some love! :hugging:", usage = "Usage: **/hug [*Required: User*]**"} }
         };
 
         public static Dictionary<CommandName, CommandType> GetCommands()
-        {
-            return commands;
-        }
-
+            => commands;
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cambot_3.utils.CamCoins
 {
-    public class CoinsPlayerObject
+    public class CoinsDatabasePlayerObject
     {
         public ulong UserId { get; set; }
         public string Username { get; set; }

@@ -1,17 +1,10 @@
 ﻿using Cambot_3.utils.Logging;
 using Discord;
-using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Reactive;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Cambot_3.utils.Levels
 {
@@ -23,7 +16,11 @@ namespace Cambot_3.utils.Levels
         // Instancing
         private static LevelsDatabaseHandler _instance;
         private LevelsDatabaseHandler() { }
-        public static LevelsDatabaseHandler Instance { get { return _instance ?? new LevelsDatabaseHandler(); } }
+
+        public static LevelsDatabaseHandler Instance
+        {
+            get { return _instance ?? new LevelsDatabaseHandler(); }
+        }
 
         // Private
         private bool PlayerExists(ulong id) => Players.ContainsKey(id);
@@ -95,16 +92,15 @@ namespace Cambot_3.utils.Levels
         {
             foreach (var p in Players)
             {
-                if ((_db.PlayersDB.Where(x => p.Value.ID == (ulong)x.UserID).Any()))
+                if ((_db.PlayersDB.Any(x => p.Value.ID == (ulong)x.UserID)))
                 {
-                    var player = _db.PlayersDB.Where(x => (ulong)x.UserID == p.Value.ID).FirstOrDefault();
+                    var player = _db.PlayersDB.FirstOrDefault(x => (ulong)x.UserID == p.Value.ID);
                     player.Level = p.Value.Level;
                     player.Experience = p.Value.Experience;
                 }
                 else
                 {
                     AddToDatabase(p.Value);
-                    Logger.Low($"Player added, {p.Key}, {p.Value.Username}, {p.Value.Experience}, {p.Value.Level}");
                 }
             }
 

@@ -2,7 +2,7 @@
 using Cambot_3.API.ApiModels;
 using Cambot_3.API.ApiModels.InternationalSpaceStation;
 using Cambot_3.API.ApiModels.Trefle;
-using Cambot_3.utils;
+using Cambot_3.utils.CommandStuffs;
 using Cambot_3.utils.JSON;
 using Cambot_3.utils.Levels;
 using Cambot_3.utils.Logging;
@@ -25,15 +25,17 @@ namespace Cambot_3.Modules
         public InteractionService Commands { get; set; }
         private DiscordSocketClient _client;
         private IServiceProvider _services;
-        private Dictionary<CommandUtils.CommandName, CommandUtils.CommandType> _commandDict;
+        private Dictionary<CommandName, CommandUtils.CommandType> _commandDict;
         private LevelsDatabaseHandler _levelsDb;
+        private CommandsUsedLeaderboardHandler _commandsUsed;
 
         public SlashCommands(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
             _commandDict = CommandUtils.GetCommands();
-            _levelsDb = LevelsDatabaseHandler.GetInstance();
+            _levelsDb = LevelsDatabaseHandler.Instance;
+            _commandsUsed = CommandsUsedLeaderboardHandler.Instance;
         }
 
         // For weather for the Americans
@@ -154,8 +156,8 @@ namespace Cambot_3.Modules
 
                 _commandDict.ToList().ForEach(x =>
                 {
-                    if (x.Value.parameter == CommandUtils.CommandParams.None) sbNo.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
-                    else if (x.Value.parameter == CommandUtils.CommandParams.Optional) sbOpt.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
+                    if (x.Value.parameter == CommandParams.None) sbNo.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
+                    else if (x.Value.parameter == CommandParams.Optional) sbOpt.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
                     else sbReq.AppendLine($"\t**- {x.Value.emoji} {x.Value.name}**");
 
                 });
@@ -575,8 +577,15 @@ namespace Cambot_3.Modules
 
         // Level's leaderboard
         [SlashCommand("leaderboard", "Get the leaderboard of levels")]
-        public async Task GetLeaderboard() => await RespondAsync(embed: CreateCustomEmbed(title: $"Leaderboard!", content: $"{_levelsDb.GetLeaderBoardDescending()}" +
-            $"\nEarn **experience** by using commands!\nExperience and levels are counted for globally,\nwhich means across all servers!\nWant to see what your level is? Use **/level**", timestamp: true, credit: "Cambot", user: Context.User));
+        public async Task GetLeaderboard() => await RespondAsync(embed: CreateCustomEmbed(title: $"Leaderboard!",
+            content: $"{_levelsDb.GetLeaderBoardDescending()}" +
+                     $"\nEarn **experience** by using commands!\nExperience and levels are counted for globally,\nwhich means across all servers!\nWant to see what your level is? Use **/level**",
+            timestamp: true, credit: "Cambot", user: Context.User));
+
+
+        [SlashCommand("commanduse", "What commands are used the most?")]
+        public async Task GetCommandUseLeaderboard() => await RespondAsync(embed: CreateCustomEmbed("Commands used!",
+            _commandsUsed.GetCommandsUsedDescending(), null, "Cambot", Context.User));
 
     }
 }
