@@ -27,7 +27,6 @@ namespace Cambot_3.Modules
         private IServiceProvider _services;
         private Dictionary<CommandName, CommandUtils.CommandType> _commandDict;
         private LevelsDatabaseHandler _levelsDb;
-        private CommandsUsedLeaderboardHandler _commandsUsed;
 
         public SlashCommands(IServiceProvider services)
         {
@@ -35,7 +34,6 @@ namespace Cambot_3.Modules
             _services = services;
             _commandDict = CommandUtils.GetCommands();
             _levelsDb = LevelsDatabaseHandler.Instance;
-            _commandsUsed = CommandsUsedLeaderboardHandler.Instance;
         }
 
         // For weather for the Americans
@@ -581,11 +579,6 @@ namespace Cambot_3.Modules
             content: $"{_levelsDb.GetLeaderBoardDescending()}" +
                      $"\nEarn **experience** by using commands!\nExperience and levels are counted for globally,\nwhich means across all servers!\nWant to see what your level is? Use **/level**",
             timestamp: true, credit: "Cambot", user: Context.User));
-
-
-        [SlashCommand("commanduse", "What commands are used the most?")]
-        public async Task GetCommandUseLeaderboard() => await RespondAsync(embed: CreateCustomEmbed("Commands used!",
-            _commandsUsed.GetCommandsUsedDescending(), null, "Cambot", Context.User));
 
     }
 }

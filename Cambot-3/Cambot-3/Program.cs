@@ -30,7 +30,6 @@ namespace Cambot_3
         private Timer _databaseTimer;
         private LevelsDatabaseHandler _levelsDb;
         private CoinsDatabaseHandler _coinsDb;
-        private CommandsUsedLeaderboardHandler _commandsUsedLeaderboardDb;
 
         //private IConfiguration _config;
         public Program()
@@ -38,7 +37,6 @@ namespace Cambot_3
             _serviceProvidor = ConfigureServices();
             _levelsDb = LevelsDatabaseHandler.Instance;
             _coinsDb = CoinsDatabaseHandler.Instance;
-            _commandsUsedLeaderboardDb = CommandsUsedLeaderboardHandler.Instance;
 
             _config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile(path: "ConfigurationFile.json").Build();
         }
